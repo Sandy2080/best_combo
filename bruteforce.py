@@ -5,13 +5,15 @@ from itertools import combinations
 
 def main():
     shares_list = read_csv()
-    print(shares_list)
+    calculate_best_profit(shares_list)
+
+
+def calculate_best_profit(shares):
+    print("calculation in progress ... ")
     profit = 0
     best_combo = []
-
-    for i in range(len(shares_list)):
-        print("calculation in progress ... ")
-        combos = combinations(shares_list, i+1)
+    for i in range(len(shares)):
+        combos = combinations(shares, i+1)
 
         for combo in combos:
             # 1-j'achète des actions
@@ -31,7 +33,7 @@ def main():
 
 
 def read_csv():
-    with open("data/data_set_2.csv") as csvfile:
+    with open("data/data_set.csv") as csvfile:
         shares_file = csv.reader(csvfile, delimiter=',')
 
         shares_list = []
