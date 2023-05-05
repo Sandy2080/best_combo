@@ -10,7 +10,7 @@ def main():
 
 def calculate_best_profit(shares):
     print("calculation in progress ... ")
-    profit = 0
+    best_profit = 0
     best_combo = []
     for i in range(len(shares)):
         combos = combinations(shares, i+1)
@@ -25,11 +25,11 @@ def calculate_best_profit(shares):
                 # 3-je calcule le meilleur retour sur investissement
                 total_profit = calc_profit(combo)
 
-                if total_profit > profit:
-                    profit = total_profit
+                if total_profit > best_profit:
+                    best_profit = total_profit
                     best_combo = combo
     print(f"Meilleur investissement : {calc_cost(best_combo)}€")
-    print(f"Meilleur profit : {profit}€")
+    print(f"Meilleur profit : {best_profit}€")
 
 
 def read_csv():
@@ -39,8 +39,8 @@ def read_csv():
         shares_list = []
         for row in shares_file:
             shares_list.append(
-                (row[0], float(row[1]), float(row[2]))
-            )
+                (row[0],  float(
+                    row[1]), float(row[2])))
 
         return shares_list
 
@@ -48,11 +48,9 @@ def read_csv():
 
 
 def calc_cost(combo):
-
     prices = []
     for el in combo:
         prices.append(el[1])
-
     return sum(prices)
 
 # calcul retour sur investissement
@@ -62,7 +60,6 @@ def calc_profit(combo):
     profits = []
     for el in combo:
         profits.append(el[1] * el[2] / 100)
-
     return sum(profits)
 
 
