@@ -1,19 +1,40 @@
 # algo du sac à dos
 import csv
 import sys
+import time
 from itertools import combinations
 
+start_time = time.time()
 MAX_INVEST = 500
 
 
 def main():
-    # brute_force()  # à remplacer avec knapsack
+    brute_force()  # à remplacer avec knapsack
     shares_list = read_csv()
     max_invest = int(MAX_INVEST * 100)  # max_invest - W
     shares_total = len(shares_list)  # les actions - n
     costs = [int(i[1] * 100) for i in shares_list]   # weights
     profits = [int(i[2] * 100) for i in shares_list]  # values
-    knap_sack(max_invest, costs, profits, shares_total)
+    # knap_sack(max_invest, costs, profits, shares_total)
+    kSack(max_invest, costs, profits)
+
+
+def kSack(W, wt, val):
+    n = len(val)
+    table = [[0 for x in range(W + 1)] for x in range(n + 1)]
+
+    for i in range(n + 1):
+        for j in range(W + 1):
+            if i == 0 or j == 0:
+                table[i][j] = 0
+            elif wt[i-1] <= j:
+                table[i][j] = max(val[i-1]
+                                  + table[i-1][j-wt[i-1]],  table[i-1][j])
+            else:
+                table[i][j] = table[i-1][j]
+
+    print(table[n][W])
+
 
 # bruteforce
 
@@ -39,8 +60,7 @@ def brute_force():
             if total_profit > best_profit:
                 best_profit = total_profit
                 best_combo = combo
-    print(f"Meilleur investissement : {calc_cost(best_combo)}€")
-    print(f"Meilleur profit : {best_profit}€")
+    display_results(best_combo)
 
 
 def get_combos(shares):
@@ -122,6 +142,18 @@ def knap_sack(max_invest, costs, profits, shares_total):
                 knap_sack(max_invest, costs, profits, shares_total-1))
         except Exception:
             breakpoint()
+
+
+def display_results(best_combo):
+    """Display best combination results
+    @param best_combo: most profitable shares combination (list)
+    """
+    print(f"Best investment : {calc_cost(best_combo)}€")
+
+    print("\nTotal cost : ", calc_cost(best_combo), "€")
+    print("Profit after 2 years : +", calc_profit(best_combo), "€")
+    print("=======================================")
+    print("\nTime elapsed : ", time.time() - start_time, "seconds\n")
 
 
 main()
