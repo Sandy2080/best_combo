@@ -1,6 +1,9 @@
 
 import csv
 from itertools import combinations
+import time
+
+start_time = time.time()
 
 
 def main():
@@ -32,6 +35,30 @@ def calculate_best_profit(shares):
     print(f"Meilleur profit : {best_profit}€")
 
 
+def brute_force():
+
+    # read csv
+    shares_list = read_csv()
+    best_profit = 0
+    best_combo = []
+    # generate all combos
+    for i in range(len(shares_list)):
+        combos = combinations(shares_list, i+1)
+
+        # combos = get_combos(shares_list)
+        # filter combos - must be < 500E + calculate profits
+        combos = [combo
+                  for combo in combos if calc_cost(combo) <= 500]
+
+        # return best profit
+        for combo in combos:
+            total_profit = calc_profit(combo)
+            if total_profit > best_profit:
+                best_profit = total_profit
+                best_combo = combo
+    display_results(best_combo)
+
+
 def read_csv():
     with open("data/data_set.csv") as csvfile:
         shares_file = csv.reader(csvfile, delimiter=',')
@@ -61,6 +88,16 @@ def calc_profit(combo):
     for el in combo:
         profits.append(el[1] * el[2] / 100)
     return sum(profits)
+
+
+def display_results(best_combo):
+    """Display best combination results
+    @param best_combo: most profitable shares combination (list)
+    """
+    print("\nTotal cost : ", calc_cost(best_combo), "€")
+    print(f"Best investment : {calc_profit(best_combo)}€")
+    print("=======================================")
+    print("\nTime elapsed : ", time.time() - start_time, "seconds\n")
 
 
 main()
