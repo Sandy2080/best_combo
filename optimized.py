@@ -1,17 +1,12 @@
 from tqdm import tqdm
 
 import csv
-import time
 import sys
-
+import time
+from itertools import combinations
 
 start_time = time.time()
-
-# Check for custom cash investment (default = 500)
-try:
-    MAX_INVEST = float(sys.argv[2])
-except IndexError:
-    MAX_INVEST = 500
+MAX_INVEST = 5001
 
 
 def main():
@@ -28,14 +23,91 @@ def main():
     print(
         f"\nProcessing '{sys.argv[1]}' ({len(shares_list)} valid shares) for {MAX_INVEST}€ :")
 
-    display_results(knapsack(shares_list))
+    max_invest = int(MAX_INVEST * 100)
+    shares_total = len(shares_list)
+    cost = []       # weights
+    profit = []     # values
 
+    for share in shares_list:
+        cost.append(share[1])
+        profit.append(share[2])
+
+    knapSack(max_invest, cost, profit, shares_total, shares_list)
+
+    return 0
+
+# optimize
+# https://www.geeksforgeeks.org/0-1-knapsack-problem-dp-10/
+# W => capacity
+# wt => weight
+# val
+
+
+def knapSack(max_invest, cost, profit, shares_total, shares_list):
+    """(ks) for 0-1 knapsack problem
+     @param shares_list: max_invest (max capacity), cost (weight), profit (values), shares_total, shares_list
+     @return: best combinaition and best return on investment
+    """
+
+    #
+    # TABLE with actions list and max investissement
+    ks = [[0 for x in range(max_invest + 1)] for x in range(shares_total + 1)]
+
+    # looping thru the actions to find optimal profit
+    for i in tqdm(range(1, shares_total + 1)):
+
+        for w in range(1, max_invest + 1):
+            # while cost < W or max invest, add action to table or knapsack
+            if cost[i-1] <= w:
+                # Get max profit bet.
+                # 1- get max profit for every combo
+                # 2- if cost not exceeding the max invest (max capacity)
+                ks[i][w] = max(ks[i-1][w], ks[i-1][w-cost[i-1]] + profit[i-1])
+            else:
+                ks[i][w] = ks[i-1][w]
+
+    print(f"\nBest investment : {ks[shares_total][max_invest]}€")
+    print("\nTime elapsed : ", time.time() - start_time, "seconds\n")
+
+
+# bruteforce
+
+
+def brute_force():
+
+    # read csv
+    shares_list = read_csv()
+    best_profit = 0
+    best_combo = []
+    # generate all combos
+    for i in range(len(shares_list)):
+        combos = combinations(shares_list, i+1)
+
+        # combos = get_combos(shares_list)
+        # filter combos - must be < 500E + calculate profits
+        combos = [combo
+                  for combo in combos if calc_cost(combo) <= 500]
+
+        # return best profit
+        for combo in combos:
+            total_profit = calc_profit(combo)
+            if total_profit > best_profit:
+                best_profit = total_profit
+                best_combo = combo
+    display_results(best_combo)
+
+
+def get_combos(shares):
+    for i in range(len(shares)):
+        combos = combinations(shares, i+1)
+        return combos
+
+
+# def best_combo_and_profit(combos):
 
 def read_csv(filename):
-    """Import shares data from csv file
-    Filter out corrupted data
-
-    @return: shares data (list)
+    """read and load data from csv file
+    @return: list of shares
     """
     try:
         with open(filename) as csvfile:
@@ -63,70 +135,32 @@ def read_csv(filename):
         print(f"\nFile '{filename}' does not exist. Please try again.\n")
         time.sleep(1)
         sys.exit()
+# calcul coût investissement
 
 
-def knapsack(shares_list):
-    """Initialize the matrix (ks) for 0-1 knapsack problem
-     Get best shares combination
+def calc_cost(combo):
 
-     @param shares_list: shares data (list)
-     @return: best possible combination (list)
-    """
-    max_inv = int(MAX_INVEST * 100)     # capacity
-    shares_total = len(shares_list)
-    cost = []       # weights
-    profit = []     # values
+    prices = []
+    for el in combo:
+        prices.append(el[1])
 
-    for share in shares_list:
-        cost.append(share[1])
-        profit.append(share[2])
+    return sum(prices)
 
-    # Find optimal profit
-    ks = [[0 for x in range(max_inv + 1)] for x in range(shares_total + 1)]
+# calcul retour sur investissement
 
-    for i in tqdm(range(1, shares_total + 1)):
 
-        for w in range(1, max_inv + 1):
-            if cost[i-1] <= w:
-                ks[i][w] = max(profit[i-1] + ks[i-1][w-cost[i-1]], ks[i-1][w])
-            else:
-                ks[i][w] = ks[i-1][w]
+def calc_profit(combo):
+    profits = []
+    for el in combo:
+        profits.append(el[1] * el[2] / 100)
 
-    # Retrieve combination of shares from optimal profit
-    best_combo = []
-
-    while max_inv >= 0 and shares_total >= 0:
-
-        if ks[shares_total][max_inv] == \
-                ks[shares_total-1][max_inv - cost[shares_total-1]] + profit[shares_total-1]:
-
-            best_combo.append(shares_list[shares_total-1])
-            max_inv -= cost[shares_total-1]
-
-        shares_total -= 1
-
-    return best_combo
+    return sum(profits)
 
 
 def display_results(best_combo):
-    """Display best combination results
-
-    @param best_combo: most profitable shares combination (list)
-    """
-    print(f"\nMost profitable investment ({len(best_combo)} shares) :\n")
-
-    cost = []
-    profit = []
-
-    for item in best_combo:
-        print(f"{item[0]} | {item[1] / 100} € | +{item[2]} €")
-        cost.append(item[1] / 100)
-        profit.append(item[2])
-
-    print("\nTotal cost : ", sum(cost), "€")
-    print("Profit after 2 years : +", sum(profit), "€")
+    print(f"Best investment : {calc_profit(best_combo)}€")
+    print("=======================================")
     print("\nTime elapsed : ", time.time() - start_time, "seconds\n")
 
 
-if __name__ == "__main__":
-    main()
+main()

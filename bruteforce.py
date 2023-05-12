@@ -8,7 +8,8 @@ start_time = time.time()
 
 def main():
     shares_list = read_csv()
-    calculate_best_profit(shares_list)
+    best_combo = calculate_best_profit(shares_list)
+    display_results(best_combo)
 
 
 def calculate_best_profit(shares):
@@ -31,8 +32,7 @@ def calculate_best_profit(shares):
                 if total_profit > best_profit:
                     best_profit = total_profit
                     best_combo = combo
-    print(f"Meilleur investissement : {calc_cost(best_combo)}€")
-    print(f"Meilleur profit : {best_profit}€")
+    return best_combo
 
 
 def brute_force():
