@@ -1,5 +1,6 @@
 from tqdm import tqdm
 
+import copy
 import csv
 import sys
 import time
@@ -50,14 +51,15 @@ def knapSack(max_invest, cost, profit, shares_total, shares_list):
      @param shares_list: shares data (list)
      @return: best possible combination (list)
     """
-
-    # TABLE with actions list and max investissement
-    ks = [[0 for x in range(max_invest + 1)] for x in range(shares_total + 1)]
+    memory = 0
+    # TABLE with actions list
+    ks = [[0 for x in range(max_invest + 1)] for y in range(shares_total + 1)]
 
     # looping thru the actions to find optimal profit
     for i in tqdm(range(1, shares_total + 1)):
 
         for w in range(1, max_invest + 1):
+            # calcul complexité en espace
             # while cost < W or max invest, add action to table or knapsack
             if cost[i-1] <= w:
                 # Get max profit bet.
@@ -72,8 +74,13 @@ def knapSack(max_invest, cost, profit, shares_total, shares_list):
     # 1- retrieve max and best profit in the table
     best_combo = []
 
+    # complexité spatiale
+    memory = memory + len(ks) * len(ks[i])
+    print(f"memory", memory)
+
     while max_invest >= 0 and shares_total >= 0:
 
+        # ??
         if ks[shares_total][max_invest] == \
                 ks[shares_total-1][max_invest - cost[shares_total-1]] + profit[shares_total-1]:
 

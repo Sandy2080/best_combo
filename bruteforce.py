@@ -2,13 +2,14 @@
 import csv
 from itertools import combinations
 import time
-
+import copy
 start_time = time.time()
 
 
 def main():
     shares_list = read_csv()
     best_combo = calculate_best_profit(shares_list)
+    best_combo = brute_force()
     display_results(best_combo)
 
 
@@ -34,16 +35,24 @@ def calculate_best_profit(shares):
                     best_combo = combo
     return best_combo
 
+# pour tester toutes les combinaisons possibles
+
 
 def brute_force():
 
     # read csv
     shares_list = read_csv()
     best_profit = 0
+    memory = 0
     best_combo = []
     # generate all combos
     for i in range(len(shares_list)):
+
         combos = combinations(shares_list, i+1)
+        combos_copy = copy.copy(combos)
+
+        # calcul complexité spatiale
+        memory = memory + len(list(combos_copy))
 
         # combos = get_combos(shares_list)
         # filter combos - must be < 500E + calculate profits
@@ -56,7 +65,8 @@ def brute_force():
             if total_profit > best_profit:
                 best_profit = total_profit
                 best_combo = combo
-    display_results(best_combo)
+    print("\nmemory space : ", str(memory))
+    return best_combo
 
 
 def read_csv():
@@ -75,10 +85,10 @@ def read_csv():
 
 
 def calc_cost(combo):
-    prices = []
+    costs = []
     for el in combo:
-        prices.append(el[1])
-    return sum(prices)
+        costs.append(el[1])
+    return sum(costs)
 
 # calcul retour sur investissement
 
